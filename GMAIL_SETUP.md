@@ -27,6 +27,7 @@ The Gmail integration allows you to:
 
 ## Step 2: Enable Gmail API
 
+
 1. In the Google Cloud Console, search for "Gmail API"
 2. Click on "Gmail API"
 3. Click the "ENABLE" button
