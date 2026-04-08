@@ -10,7 +10,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Guard against missing env vars during SSR/prerender — auth is only
+// invoked on the client (inside useEffect / event handlers), never at
+// module evaluation time, so null is safe during the build phase.
+const app = process.env.NEXT_PUBLIC_FIREBASE_API_KEY
+  ? getApps().length === 0
+    ? initializeApp(firebaseConfig)
+    : getApps()[0]
+  : null;
 
-export const auth = getAuth(app);
+export const auth = app ? getAuth(app) : (null as unknown as ReturnType<typeof getAuth>);
 export const googleProvider = new GoogleAuthProvider();
