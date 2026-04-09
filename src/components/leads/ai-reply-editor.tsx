@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Wand2, RefreshCw, Loader2, Copy, Check } from "lucide-react";
+import { track } from "@/lib/analytics";
 import type { Lead } from "@/types/lead";
 import type { ReplyResponse } from "@/types/ai";
 
@@ -41,6 +42,7 @@ export function AiReplyEditor({ lead }: AiReplyEditorProps) {
       setReply(data);
       setSubject(data.subject);
       setBody(data.body);
+      track("ai_reply_generated", { leadId: lead.id });
     } catch {
       setError("Unable to generate reply. Try again.");
     } finally {

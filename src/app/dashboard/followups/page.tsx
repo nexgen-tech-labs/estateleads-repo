@@ -112,7 +112,7 @@ export default function FollowupsPage() {
         <TaskGroupSection
           title="Overdue"
           tasks={groupedTasks.overdue}
-          emptyText="No overdue follow-up tasks."
+          emptyText="No overdue tasks — great work"
           onSend={(task) => updateTaskStatus(task, "sent")}
           onComplete={(task) => updateTaskStatus(task, "completed")}
           onSkip={(task) => updateTaskStatus(task, "skipped")}
@@ -120,7 +120,7 @@ export default function FollowupsPage() {
         <TaskGroupSection
           title="Due Today"
           tasks={groupedTasks.due}
-          emptyText="No follow-ups due today."
+          emptyText="Nothing due today — you're all caught up"
           onSend={(task) => updateTaskStatus(task, "sent")}
           onComplete={(task) => updateTaskStatus(task, "completed")}
           onSkip={(task) => updateTaskStatus(task, "skipped")}
@@ -128,7 +128,7 @@ export default function FollowupsPage() {
         <TaskGroupSection
           title="Upcoming"
           tasks={groupedTasks.upcoming}
-          emptyText="No upcoming follow-up tasks."
+          emptyText="No upcoming tasks scheduled"
           onSend={(task) => updateTaskStatus(task, "sent")}
           onComplete={(task) => updateTaskStatus(task, "completed")}
           onSkip={(task) => updateTaskStatus(task, "skipped")}

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, RefreshCw, Loader2, Flame, Thermometer, Snowflake } from "lucide-react";
+import { track } from "@/lib/analytics";
 import type { Lead } from "@/types/lead";
 import type { LeadSummaryResponse } from "@/types/ai";
 
@@ -39,6 +40,7 @@ export function AiSummaryCard({ lead }: AiSummaryCardProps) {
       if (!res.ok) throw new Error("Failed to generate");
       const data: LeadSummaryResponse = await res.json();
       setSummary(data);
+      track("ai_summary_generated", { leadId: lead.id });
     } catch {
       setError("Unable to generate summary. Try again.");
     } finally {

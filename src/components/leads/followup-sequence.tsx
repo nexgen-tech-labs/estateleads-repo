@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Clock, RefreshCw, Loader2 } from "lucide-react";
+import { track } from "@/lib/analytics";
 import type { Lead } from "@/types/lead";
 import type { FollowupResponse } from "@/types/ai";
 import { FollowupTaskCard } from "@/components/followups/followup-task-card";
@@ -66,6 +67,7 @@ export function FollowupSequence({ lead }: FollowupSequenceProps) {
       setFollowups(data);
       setEdits({ step1: data.step1, step2: data.step2, step3: data.step3 });
       setError(null);
+      track("followups_generated", { leadId: lead.id });
     } catch {
       setError("Unable to generate follow-ups. Try again.");
     } finally {
@@ -111,6 +113,7 @@ export function FollowupSequence({ lead }: FollowupSequenceProps) {
       if (!res.ok) throw new Error("Failed to update task");
       const data = await res.json();
       setTasks((prev) => prev.map((item) => (item.id === task.id ? data.task : item)));
+      if (status === "completed") track("task_completed", { taskId: task.id, leadId: lead.id });
     } catch (err) {
       console.error(err);
       setError("Unable to update task. Try again.");

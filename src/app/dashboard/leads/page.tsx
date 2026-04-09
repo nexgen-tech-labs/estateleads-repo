@@ -7,19 +7,23 @@ import { getLeads } from "@/lib/firestore/leads";
 import { Button } from "@/components/ui/button";
 import { LeadsTable } from "@/components/leads/leads-table";
 import { LeadFilters } from "@/components/leads/lead-filters";
-import { Plus, Upload } from "lucide-react";
+import { Inbox, Plus, Upload } from "lucide-react";
 import type { Lead, LeadStatus, LeadSource } from "@/types/lead";
 
 export default function LeadsPage() {
   const { profile } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
 
   useEffect(() => {
     if (!profile?.agencyId) return;
-    getLeads(profile.agencyId).then(setLeads);
+    getLeads(profile.agencyId).then((data) => {
+      setLeads(data);
+      setLoaded(true);
+    });
   }, [profile?.agencyId]);
 
   const filteredLeads = useMemo(() => {
@@ -69,11 +73,36 @@ export default function LeadsPage() {
         onSourceFilterChange={setSourceFilter}
       />
 
-      <div className="text-xs text-muted-foreground">
-        {filteredLeads.length} lead{filteredLeads.length !== 1 ? "s" : ""}
-      </div>
-
-      <LeadsTable leads={filteredLeads} />
+      {loaded && leads.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16 text-center">
+          <Inbox className="h-10 w-10 text-muted-foreground/40 mb-4" />
+          <p className="text-sm font-medium">No leads yet</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Import a CSV or connect your inbox to get started
+          </p>
+          <div className="mt-5 flex gap-2">
+            <Link href="/dashboard/import">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Upload className="h-3.5 w-3.5" />
+                Import CSV
+              </Button>
+            </Link>
+            <Link href="/dashboard/inbox">
+              <Button size="sm" className="gap-1.5">
+                <Plus className="h-3.5 w-3.5" />
+                Connect Inbox
+              </Button>
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="text-xs text-muted-foreground">
+            {filteredLeads.length} lead{filteredLeads.length !== 1 ? "s" : ""}
+          </div>
+          <LeadsTable leads={filteredLeads} />
+        </>
+      )}
     </div>
   );
 }
