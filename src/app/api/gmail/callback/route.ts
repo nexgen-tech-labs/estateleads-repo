@@ -4,7 +4,7 @@
  */
 
 import { getTokensFromCode, getGmailUserEmail } from "@/lib/gmail"
-import { saveTokens } from "@/lib/token-store"
+import { encodeTokens, COOKIE_NAME } from "@/lib/token-store"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
@@ -26,13 +26,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const tokens = await getTokensFromCode(code)
-
-    // Fetch the real Gmail address using the access token
     const email = tokens.access_token
       ? await getGmailUserEmail(tokens.access_token)
       : undefined
-
-    const tokenId = saveTokens({ ...tokens, email })
 
     const response = NextResponse.redirect(
       new URL(
@@ -40,11 +36,12 @@ export async function GET(request: NextRequest) {
         request.url
       )
     )
-    response.cookies.set("gmail_token_id", tokenId, {
+    response.cookies.set(COOKIE_NAME, encodeTokens({ ...tokens, email }), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/",
     })
 
     return response

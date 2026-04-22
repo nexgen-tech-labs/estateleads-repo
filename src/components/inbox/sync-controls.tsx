@@ -7,12 +7,14 @@ import { useState } from "react"
 
 interface SyncControlsProps {
   isConnected: boolean
-  onSync?: (label: string) => Promise<any>
+  label: string
+  onSync?: (label: string) => Promise<void>
   lastSyncedAt?: string
 }
 
 export function SyncControls({
   isConnected,
+  label,
   onSync,
   lastSyncedAt,
 }: SyncControlsProps) {
@@ -23,7 +25,7 @@ export function SyncControls({
 
     setIsSyncing(true)
     try {
-      await onSync("Property Enquiries")
+      await onSync(label)
     } catch (error) {
       console.error("Sync error:", error)
     } finally {

@@ -1,36 +1,27 @@
 /**
- * Shared in-memory token store for Gmail OAuth tokens.
- * Both /api/gmail/callback and /api/gmail/sync import from here
- * so they share the same Map instance within a single server process.
- *
- * NOTE: This is an MVP approach — tokens are lost on server restart.
- * Replace with Firestore storage for production.
+ * Cookie-based Gmail token helpers.
+ * Tokens are stored directly in a secure httpOnly cookie as base64 JSON —
+ * survives serverless cold starts unlike the previous in-memory Map.
  */
 
-interface GmailTokens {
-  access_token?: string | null;
-  refresh_token?: string | null;
-  expiry_date?: number | null;
-  token_type?: string | null;
-  email?: string;
+export interface GmailTokens {
+  access_token?: string | null
+  refresh_token?: string | null
+  expiry_date?: number | null
+  token_type?: string | null
+  email?: string
 }
 
-const store = new Map<string, GmailTokens>();
+export const COOKIE_NAME = "gmail_tokens"
 
-export function saveTokens(tokens: GmailTokens): string {
-  const id = `token_${Date.now()}`;
-  store.set(id, tokens);
-  return id;
+export function encodeTokens(tokens: GmailTokens): string {
+  return Buffer.from(JSON.stringify(tokens)).toString("base64")
 }
 
-export function getTokens(id: string): GmailTokens | null {
-  return store.get(id) ?? null;
-}
-
-export function hasTokens(id: string): boolean {
-  return store.has(id);
-}
-
-export function deleteTokens(id: string): void {
-  store.delete(id);
+export function decodeTokens(encoded: string): GmailTokens | null {
+  try {
+    return JSON.parse(Buffer.from(encoded, "base64").toString("utf-8")) as GmailTokens
+  } catch {
+    return null
+  }
 }

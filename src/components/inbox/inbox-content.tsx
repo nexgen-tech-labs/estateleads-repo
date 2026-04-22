@@ -14,6 +14,7 @@ export function InboxContent() {
   const [connectedEmail, setConnectedEmail] = useState<string>()
   const [gmailLabel, setGmailLabel] = useState("Property Enquiries")
   const [emails, setEmails] = useState<ParsedEmail[]>([])
+  const [importedIds, setImportedIds] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(false)
   const [lastSyncedAt, setLastSyncedAt] = useState<string>()
 
@@ -81,18 +82,21 @@ export function InboxContent() {
         body: JSON.stringify({ email }),
       })
 
-      if (!response.ok) {
-        throw new Error("Import failed")
-      }
+      if (!response.ok) throw new Error("Import failed")
 
       const data = await response.json()
+      setImportedIds((prev) => new Set([...prev, email.messageId]))
       alert(`Lead "${data.lead.name}" created successfully!`)
-
-      // Remove from table
-      setEmails(emails.filter((e) => e.messageId !== email.messageId))
     } catch (error) {
       console.error("Import error:", error)
       alert("Failed to create lead. Please try again.")
+    }
+  }
+
+  const handleImportAll = async () => {
+    const pending = emails.filter((e) => !importedIds.has(e.messageId))
+    for (const email of pending) {
+      await handleImportEmail(email)
     }
   }
 
@@ -110,14 +114,12 @@ export function InboxContent() {
           isConnected={isConnected}
           email={connectedEmail}
         />
-        <LabelConfig
-          initialLabel={gmailLabel}
-          onSave={(label) => setGmailLabel(label)}
-        />
+        <LabelConfig onSave={(label) => setGmailLabel(label)} />
       </div>
 
       <SyncControls
         isConnected={isConnected}
+        label={gmailLabel}
         onSync={handleSync}
         lastSyncedAt={lastSyncedAt}
       />
@@ -125,7 +127,9 @@ export function InboxContent() {
       <EmailTable
         emails={emails}
         isLoading={isLoading}
+        importedIds={importedIds}
         onImport={handleImportEmail}
+        onImportAll={handleImportAll}
       />
     </div>
   )

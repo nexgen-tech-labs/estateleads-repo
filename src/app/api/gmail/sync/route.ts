@@ -5,16 +5,16 @@
 
 import { fetchEmailsByLabel } from "@/lib/gmail"
 import { parseGmailMessage } from "@/lib/email-parser"
-import { getTokens, hasTokens } from "@/lib/token-store"
+import { decodeTokens, COOKIE_NAME } from "@/lib/token-store"
 import { GmailSyncResult } from "@/types/gmail"
 import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
 async function getTokensFromCookie() {
   const cookieStore = await cookies()
-  const tokenId = cookieStore.get("gmail_token_id")?.value
-  if (!tokenId || !hasTokens(tokenId)) return null
-  return getTokens(tokenId)
+  const encoded = cookieStore.get(COOKIE_NAME)?.value
+  if (!encoded) return null
+  return decodeTokens(encoded)
 }
 
 export async function GET() {

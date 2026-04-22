@@ -5,23 +5,35 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tag } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+
+const STORAGE_KEY = "gmail_label"
+const DEFAULT_LABEL = "Property Enquiries"
 
 interface LabelConfigProps {
-  initialLabel?: string
   onSave?: (label: string) => void
 }
 
-export function LabelConfig({ initialLabel = "Property Enquiries", onSave }: LabelConfigProps) {
-  const [label, setLabel] = useState(initialLabel)
+export function LabelConfig({ onSave }: LabelConfigProps) {
+  const [label, setLabel] = useState(DEFAULT_LABEL)
   const [isSaving, setIsSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
-  const handleSave = async () => {
-    setIsSaving(true)
-    if (onSave) {
-      onSave(label)
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      setLabel(stored)
+      onSave?.(stored)
     }
+  }, [])
+
+  const handleSave = () => {
+    setIsSaving(true)
+    localStorage.setItem(STORAGE_KEY, label)
+    onSave?.(label)
     setIsSaving(false)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
   }
 
   return (
@@ -49,7 +61,7 @@ export function LabelConfig({ initialLabel = "Property Enquiries", onSave }: Lab
           </p>
         </div>
         <Button onClick={handleSave} disabled={isSaving || !label.trim()}>
-          {isSaving ? "Saving..." : "Save Label"}
+          {saved ? "Saved!" : isSaving ? "Saving..." : "Save Label"}
         </Button>
       </CardContent>
     </Card>
